@@ -20,7 +20,7 @@ stages {
     stage('Create Artifact') {
         steps {
             sh '''
-            zip -r deployment.zip .
+                zip -r deployment.zip .
             '''
         }
     }
@@ -28,7 +28,7 @@ stages {
     stage('Upload to S3') {
         steps {
             sh '''
-            aws s3 cp deployment.zip s3://$S3_BUCKET/deployment.zip
+                aws s3 cp deployment.zip s3://$S3_BUCKET/deployment.zip
             '''
         }
     }
@@ -36,13 +36,23 @@ stages {
     stage('Trigger CodeDeploy') {
         steps {
             sh '''
-            aws deploy create-deployment \
-            --application-name $APPLICATION_NAME \
-            --deployment-group-name $DEPLOYMENT_GROUP \
-            --s3-location bucket=$S3_BUCKET,bundleType=zip,key=deployment.zip \
-            --region $AWS_DEFAULT_REGION
+                aws deploy create-deployment \
+                --application-name $APPLICATION_NAME \
+                --deployment-group-name $DEPLOYMENT_GROUP \
+                --s3-location bucket=$S3_BUCKET,bundleType=zip,key=deployment.zip \
+                --region $AWS_DEFAULT_REGION
             '''
         }
+    }
+}
+
+post {
+    success {
+        echo 'Deployment triggered successfully'
+    }
+
+    failure {
+        echo 'Pipeline failed'
     }
 }
 ```
